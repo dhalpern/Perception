@@ -1,0 +1,266 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>colorAssignment</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-09-22"><meta name="DC.source" content="colorAssignment.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+<span class="comment">% PERCEPTION COLOR ASSIGNMENT</span>
+<span class="comment">% 1)</span>
+<span class="comment">%</span>
+<span class="comment">%  Making a graph of the 18th Macbeth surface</span>
+<span class="comment">%</span>
+spectrum = linspace(400,700,31);
+load <span class="string">surfaces</span>
+load <span class="string">illuminants</span>
+spect18fl = macbeth(18,:)' .* flourescent';
+spect18a = macbeth(18,:)' .* cie_a';
+plot(spectrum,[spect18fl, spect18a]);
+xlabel(<span class="string">'Wavelength (nm)'</span>);
+ylabel(<span class="string">'Reflected Energy'</span>);
+title(<span class="string">'Reflected energy of surfaces under flourescent light and illuminant A'</span>)
+legend(<span class="string">'cie a'</span>,<span class="string">'flourescent'</span>);
+
+load <span class="string">cones</span>
+coneSignals18fl = cones * spect18fl;
+coneSignals18a = cones * spect18a;
+<span class="comment">% Flourescent looks more blueish because S cells are much more active with</span>
+<span class="comment">% little change in L and M</span>
+
+<span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+<span class="comment">% 2)</span>
+load <span class="string">phosphors</span>
+monitor_to_cones = cones * phosphors';
+cones_to_monitor = inv(monitor_to_cones);
+monitorSignals = cones_to_monitor * coneSignals18a; <span class="comment">%Faster than multiplying by inverse</span>
+
+<span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+<span class="comment">% 3)</span>
+baseline = phosphors' * [1 1 1]';
+baseline_cones =  cones * baseline;
+coneSignalsDeltaS = baseline_cones + [0 0 0.5]'; <span class="comment">%increment S</span>
+monitorSignalsDeltaS = monitor_to_cones\coneSignalsDeltaS; <span class="comment">%Faster</span>
+
+<span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+<span class="comment">% 4)</span>
+cie = zeros(3, 31)
+cie(sub2ind(size(cie), [1 2], [4 16])) = 1
+cie(3, 31) = 80
+color_matching_function = inv(cones * cie') * cones
+
+<span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+<span class="comment">% 5)</span>
+cie_to_cones = cones * cie';
+cones_to_phosphors = inv(cones * phosphors');
+cie_to_phosphors = cones_to_phosphors * cie_to_cones;
+</pre><pre class="codeoutput">
+cie =
+
+  Columns 1 through 13
+
+     0     0     0     0     0     0     0     0     0     0     0     0     0
+     0     0     0     0     0     0     0     0     0     0     0     0     0
+     0     0     0     0     0     0     0     0     0     0     0     0     0
+
+  Columns 14 through 26
+
+     0     0     0     0     0     0     0     0     0     0     0     0     0
+     0     0     0     0     0     0     0     0     0     0     0     0     0
+     0     0     0     0     0     0     0     0     0     0     0     0     0
+
+  Columns 27 through 31
+
+     0     0     0     0     0
+     0     0     0     0     0
+     0     0     0     0     0
+
+
+cie =
+
+  Columns 1 through 13
+
+     0     0     0     1     0     0     0     0     0     0     0     0     0
+     0     0     0     0     0     0     0     0     0     0     0     0     0
+     0     0     0     0     0     0     0     0     0     0     0     0     0
+
+  Columns 14 through 26
+
+     0     0     0     0     0     0     0     0     0     0     0     0     0
+     0     0     1     0     0     0     0     0     0     0     0     0     0
+     0     0     0     0     0     0     0     0     0     0     0     0     0
+
+  Columns 27 through 31
+
+     0     0     0     0     0
+     0     0     0     0     0
+     0     0     0     0     0
+
+
+cie =
+
+  Columns 1 through 13
+
+     0     0     0     1     0     0     0     0     0     0     0     0     0
+     0     0     0     0     0     0     0     0     0     0     0     0     0
+     0     0     0     0     0     0     0     0     0     0     0     0     0
+
+  Columns 14 through 26
+
+     0     0     0     0     0     0     0     0     0     0     0     0     0
+     0     0     1     0     0     0     0     0     0     0     0     0     0
+     0     0     0     0     0     0     0     0     0     0     0     0     0
+
+  Columns 27 through 31
+
+     0     0     0     0     0
+     0     0     0     0     0
+     0     0     0     0    80
+
+
+color_matching_function =
+
+  Columns 1 through 7
+
+    0.1923    0.4017    0.7308    1.0000    1.1025    1.0127    0.8844
+   -0.0016   -0.0031   -0.0044   -0.0000    0.0133    0.0327    0.0602
+    0.0024    0.0045    0.0059   -0.0000   -0.0167   -0.0409   -0.0734
+
+  Columns 8 through 14
+
+    0.7645    0.5163    0.3066    0.1820    0.1042    0.0478    0.0215
+    0.1100    0.1779    0.2647    0.4010    0.6061    0.8244    0.9595
+   -0.1198   -0.1588   -0.1945   -0.2467   -0.3136   -0.3400   -0.2840
+
+  Columns 15 through 21
+
+    0.0085   -0.0000    0.0003   -0.0035   -0.0028   -0.0020   -0.0013
+    1.0135    1.0000    0.9311    0.8081    0.6455    0.4651    0.3013
+   -0.1664   -0.0000    0.2093    0.4512    0.6947    0.8970    1.0100
+
+  Columns 22 through 28
+
+   -0.0007   -0.0004   -0.0002   -0.0001   -0.0000   -0.0000   -0.0000
+    0.1754    0.0934    0.0453    0.0202    0.0082    0.0036    0.0014
+    1.0017    0.8779    0.6706    0.4723    0.3012    0.1750    0.0932
+
+  Columns 29 through 31
+
+   -0.0000   -0.0000   -0.0000
+    0.0005    0.0003    0.0000
+    0.0503    0.0242    0.0125
+
+</pre><img vspace="5" hspace="5" src="colorAssignment_01.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% PERCEPTION COLOR ASSIGNMENT
+% 1)
+% 
+%  Making a graph of the 18th Macbeth surface
+% 
+spectrum = linspace(400,700,31);
+load surfaces  
+load illuminants
+spect18fl = macbeth(18,:)' .* flourescent';
+spect18a = macbeth(18,:)' .* cie_a';
+plot(spectrum,[spect18fl, spect18a]);
+xlabel('Wavelength (nm)');
+ylabel('Reflected Energy');
+title('Reflected energy of surfaces under flourescent light and illuminant A')
+legend('cie a','flourescent');
+
+load cones
+coneSignals18fl = cones * spect18fl;
+coneSignals18a = cones * spect18a;
+% Flourescent looks more blueish because S cells are much more active with
+% little change in L and M
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 2)
+load phosphors
+monitor_to_cones = cones * phosphors';
+cones_to_monitor = inv(monitor_to_cones);
+monitorSignals = cones_to_monitor * coneSignals18a; %Faster than multiplying by inverse
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 3)
+baseline = phosphors' * [1 1 1]';
+baseline_cones =  cones * baseline;
+coneSignalsDeltaS = baseline_cones + [0 0 0.5]'; %increment S
+monitorSignalsDeltaS = monitor_to_cones\coneSignalsDeltaS; %Faster
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 4)
+cie = zeros(3, 31)
+cie(sub2ind(size(cie), [1 2], [4 16])) = 1
+cie(3, 31) = 80
+color_matching_function = inv(cones * cie') * cones
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 5)
+cie_to_cones = cones * cie';
+cones_to_phosphors = inv(cones * phosphors');
+cie_to_phosphors = cones_to_phosphors * cie_to_cones;
+##### SOURCE END #####
+--></body></html>
