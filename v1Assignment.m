@@ -126,16 +126,18 @@ sigma = .1;
 cycPerDeg = 4;
 pixPerDeg = 1/deltaX;
 hz = 8 * deltaX; % 8Hz
-odd = -sin(x*cycPerDeg*2*pi) .* normpdf(x,0,sigma);
+odd = sin(x*cycPerDeg*2*pi) .* normpdf(x,0,sigma);
 even = cos(x*cycPerDeg*2*pi) .* normpdf(x,0,sigma);
 vertOdd = conv2(odd, normpdf(x,0,sigma)');
 vertEven = conv2(even, normpdf(x,0,sigma)');
 horOdd = conv2(normpdf(x,0,sigma), odd');
 horEven = conv2(normpdf(x,0,sigma), even');
 
-sXT = [zeros(length(t)-length(x), length(x));eye(length(x))]; % x-t image
-s = repmat(sXT, [1 1 length(x)]);
-s = permute(s, [2 3 1]);
+impulse = zeros(length(t), length(x));
+impulse(50, 20) = 1;
+impulse = permute(repmat(impulse, [1 1 length(y)]), [2 3 1]);
+
+s = impulse;
 y1Save = zeros(length(x), length(y), length(t));
 y2Save = zeros(length(x), length(y), length(t));
 y3Save = zeros(length(x), length(y), length(t));
@@ -176,14 +178,14 @@ for tt = 1:length(t)
     y7 = y7 + deltaY7;
     f1 = y3 - y5;
     f2 = y5 - y7;
-    horOddFast(:,:,tt) = conv2(horOdd, f1, 'same');
-    horEvenFast(:,:,tt) = conv2(horEven, f1, 'same');
-    horOddSlow(:,:,tt) = conv2(horOdd, f2, 'same');
-    horEvenSlow(:,:,tt) = conv2(horEven, f2, 'same');
-    vertOddSlow(:,:,tt) = conv2(vertOdd, f2, 'same');
-    vertEvenSlow(:,:,tt) = conv2(vertEven, f2, 'same');
-    vertOddFast(:,:,tt) = conv2(vertOdd, f1, 'same');
-    vertEvenFast(:,:,tt) = conv2(vertEven, f1, 'same');
+    horOddFast(:,:,tt) = conv2(f1, horOdd, 'same');
+    horEvenFast(:,:,tt) = conv2(f1, horEven, 'same');
+    horOddSlow(:,:,tt) = conv2(f2, horOdd, 'same');
+    horEvenSlow(:,:,tt) = conv2(f2, horEven, 'same');
+    vertOddFast(:,:,tt) = conv2(f1, vertOdd, 'same');
+    vertEvenFast(:,:,tt) = conv2(f1, vertEven, 'same');
+    vertOddSlow(:,:,tt) = conv2(f2, vertOdd, 'same');
+    vertEvenSlow(:,:,tt) = conv2(f2, vertEven, 'same');
     
     y1Save(:,:,tt) = y1;
     y2Save(:,:,tt) = y2;
@@ -232,25 +234,25 @@ sigma = .1;
 cycPerDeg = 4;
 pixPerDeg = 1/deltaX;
 hz = 8 * deltaX; % 8Hz
-leftS = zeros(length(x), length(y), length(t));
-upS = zeros(length(x), length(y), length(t));
-rightS = zeros(length(x), length(y), length(t));
-downS = zeros(length(x), length(y), length(t));
-
 odd = -sin(x*cycPerDeg*2*pi) .* normpdf(x,0,sigma);
 even = cos(x*cycPerDeg*2*pi) .* normpdf(x,0,sigma);
 vertOdd = conv2(odd, normpdf(x,0,sigma)');
 vertEven = conv2(even, normpdf(x,0,sigma)');
 horOdd = conv2(normpdf(x,0,sigma), odd');
 horEven = conv2(normpdf(x,0,sigma), even');
-for tt = 1:length(t)
-    leftS(:,:,tt) = mkSine(length(x), pixPerDeg/cycPerDeg, 0, 1, 2*pi*tt/hz).*mkGaussian(length(x), (sigma*pixPerDeg)^2);
-    upS(:,:,tt) = mkSine(length(x), pixPerDeg/cycPerDeg, pi/2, 1, 2*pi*tt/hz);
-    rightS(:,:,tt) = mkSine(length(x), pixPerDeg/cycPerDeg, pi, 1, 2*pi*tt/hz);
-    downS(:,:,tt) = mkSine(length(x), pixPerDeg/cycPerDeg, 3*pi/2, 1, 2*pi*tt/hz);
-    showIm(leftS(:,:,tt));
-    pause
-end
+
+cycPerPix = cycPerDeg/pixPerDeg;
+
+rightS = mkSin([80, 80, 100], 0, cycPerPix, deltaX);
+leftS = mkSin([80, 80, 100], pi, cycPerPix, deltaX);
+upS = mkSin([80, 80, 100], pi/2, cycPerPix, deltaX);
+downS = mkSin([80, 80, 100], 3*pi/2, cycPerPix, deltaX);
+% for tt = 1:length(t)
+%     disp tt
+%     imagesc(leftS(:,:,tt));
+%     pause
+% end
+
 s = leftS;
 vertOddSlow = zeros(length(x), length(y), length(t));
 vertEvenSlow = zeros(length(x), length(y), length(t));
@@ -307,8 +309,28 @@ rightEnergy = rightEven.^2 + rightOdd.^2;
 upEnergy = upEven.^2  + upOdd.^2;
 downEnergy = downEven.^2 + downOdd.^2;
 
-impulse = zeros(length(t), length(x));
-impulse(50, 20) = 1;
-impulse = permute(repmat(impulse, [1 1 length(y)]), [2 3 1]);
-
-s = impulse;
+figure;
+subplot(2, 2, 1)
+hold on
+plot(squeeze(sum(sum(leftOdd, 1), 2)));
+plot(squeeze(sum(sum(leftEven, 1), 2)));
+plot(squeeze(sum(sum(leftEnergy, 1), 2)));
+title('Left');
+subplot(2, 2, 2)
+hold on
+plot(squeeze(sum(sum(rightOdd, 1), 2)));
+plot(squeeze(sum(sum(rightEven, 1), 2)));
+plot(squeeze(sum(sum(rightEnergy, 1), 2)));
+title('Right');
+subplot(2, 2, 3)
+hold on
+plot(squeeze(sum(sum(upOdd, 1), 2)));
+plot(squeeze(sum(sum(upEven, 1), 2)));
+plot(squeeze(sum(sum(upEnergy, 1), 2)));
+title('Up');
+subplot(2, 2, 4)
+hold on
+plot(squeeze(sum(sum(downOdd, 1), 2)));
+plot(squeeze(sum(sum(downEven, 1), 2)));
+plot(squeeze(sum(sum(downEnergy, 1), 2)));
+title('Down');

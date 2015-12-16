@@ -126,16 +126,18 @@ sigma = .1;
 cycPerDeg = 4;
 pixPerDeg = 1/deltaX;
 hz = 8 * deltaX; % 8Hz
-odd = -sin(x*cycPerDeg*2*pi) .* normpdf(x,0,sigma);
+odd = sin(x*cycPerDeg*2*pi) .* normpdf(x,0,sigma);
 even = cos(x*cycPerDeg*2*pi) .* normpdf(x,0,sigma);
 vertOdd = conv2(odd, normpdf(x,0,sigma)');
 vertEven = conv2(even, normpdf(x,0,sigma)');
 horOdd = conv2(normpdf(x,0,sigma), odd');
 horEven = conv2(normpdf(x,0,sigma), even');
 
-sXT = [zeros(length(t)-length(x), length(x));eye(length(x))]; % x-t image
-s = repmat(sXT, [1 1 length(x)]);
-s = permute(s, [2 3 1]);
+impulse = zeros(length(t), length(x));
+impulse(50, 20) = 1;
+impulse = permute(repmat(impulse, [1 1 length(y)]), [2 3 1]);
+
+s = impulse;
 y1Save = zeros(length(x), length(y), length(t));
 y2Save = zeros(length(x), length(y), length(t));
 y3Save = zeros(length(x), length(y), length(t));
@@ -176,14 +178,14 @@ for tt = 1:length(t)
     y7 = y7 + deltaY7;
     f1 = y3 - y5;
     f2 = y5 - y7;
-    horOddFast(:,:,tt) = conv2(horOdd, f1, 'same');
-    horEvenFast(:,:,tt) = conv2(horEven, f1, 'same');
-    horOddSlow(:,:,tt) = conv2(horOdd, f2, 'same');
-    horEvenSlow(:,:,tt) = conv2(horEven, f2, 'same');
-    vertOddSlow(:,:,tt) = conv2(vertOdd, f2, 'same');
-    vertEvenSlow(:,:,tt) = conv2(vertEven, f2, 'same');
-    vertOddFast(:,:,tt) = conv2(vertOdd, f1, 'same');
-    vertEvenFast(:,:,tt) = conv2(vertEven, f1, 'same');
+    horOddFast(:,:,tt) = conv2(f1, horOdd, 'same');
+    horEvenFast(:,:,tt) = conv2(f1, horEven, 'same');
+    horOddSlow(:,:,tt) = conv2(f2, horOdd, 'same');
+    horEvenSlow(:,:,tt) = conv2(f2, horEven, 'same');
+    vertOddFast(:,:,tt) = conv2(f1, vertOdd, 'same');
+    vertEvenFast(:,:,tt) = conv2(f1, vertEven, 'same');
+    vertOddSlow(:,:,tt) = conv2(f2, vertOdd, 'same');
+    vertEvenSlow(:,:,tt) = conv2(f2, vertEven, 'same');
     
     y1Save(:,:,tt) = y1;
     y2Save(:,:,tt) = y2;
@@ -193,10 +195,10 @@ for tt = 1:length(t)
     y6Save(:,:,tt) = y6;
     y7Save(:,:,tt) = y7;
 end
-showIm(permute(vertOddFast(:,  40, :), [3 1 2]))
-showIm(permute(vertOddSlow(:,  40, :), [3 1 2]))
-showIm(permute(vertEvenFast(:,  40, :), [3 1 2]))
-showIm(permute(vertEvenSlow(:,  40, :), [3 1 2]))
+imagesc(permute(vertOddFast(:,  40, :), [3 1 2]))
+imagesc(permute(vertOddSlow(:,  40, :), [3 1 2]))
+imagesc(permute(vertEvenFast(:,  40, :), [3 1 2]))
+imagesc(permute(vertEvenSlow(:,  40, :), [3 1 2]))
 
 % b) 
 leftEven = horOddFast + horEvenSlow;
@@ -207,10 +209,10 @@ upEven = vertOddFast + vertEvenSlow;
 upOdd = -vertOddSlow + vertEvenFast;
 downEven = -vertOddFast + vertEvenSlow;
 downOdd = vertOddFast + vertEvenSlow;
-showIm(permute(rightEven(:,  40, :), [3 1 2]))
-showIm(permute(rightOdd(:,  40, :), [3 1 2]))
-showIm(permute(leftEven(:,  40, :), [3 1 2]))
-showIm(permute(leftOdd(:,  40, :), [3 1 2]))
+imagesc(permute(rightEven(:,  40, :), [3 1 2]))
+imagesc(permute(rightOdd(:,  40, :), [3 1 2]))
+imagesc(permute(leftEven(:,  40, :), [3 1 2]))
+imagesc(permute(leftOdd(:,  40, :), [3 1 2]))
 
 % c)
 leftEnergy = leftEven.^2  + leftOdd.^2;
@@ -221,22 +223,41 @@ showIm(permute(leftEnergy(:,  40, :), [3 1 2]))
 showIm(permute(rightEnergy(:,  40, :), [3 1 2]))
 
 % d)
+deltaX = 1/20;
+deltaT = 10; % ms
+duration = 1000; % ms
+Xrange = 2;
+t = 0:deltaT:duration-deltaT;
+x = -Xrange:deltaX:Xrange-deltaX;
+y = -Xrange:deltaX:Xrange-deltaX;
+sigma = .1;
 cycPerDeg = 4;
 pixPerDeg = 1/deltaX;
 hz = 8 * deltaX; % 8Hz
-leftX = zeros(length(x), length(y), length(t));
-upX = zeros(length(x), length(y), length(t));
-rightX = zeros(length(x), length(y), length(t));
-downX = zeros(length(x), length(y), length(t));
+leftS = zeros(length(x), length(y), length(t));
+upS = zeros(length(x), length(y), length(t));
+rightS = zeros(length(x), length(y), length(t));
+downS = zeros(length(x), length(y), length(t));
+odd = -sin(x*cycPerDeg*2*pi) .* normpdf(x,0,sigma);
+even = cos(x*cycPerDeg*2*pi) .* normpdf(x,0,sigma);
+vertOdd = conv2(odd, normpdf(x,0,sigma)');
+vertEven = conv2(even, normpdf(x,0,sigma)');
+horOdd = conv2(normpdf(x,0,sigma), odd');
+horEven = conv2(normpdf(x,0,sigma), even');
+
+cycPerPix = cycPerDeg/pixPerDeg;
+
+rightS = mkSin([80, 80, 100], 0, cycPerPix, deltaX);
+leftS = mkSin([80, 80, 100], pi, cycPerPix, deltaX);
+upS = mkSin([80, 80, 100], pi/2, cycPerPix, deltaX);
+downS = mkSin([80, 80, 100], 3*pi/2, cycPerPix, deltaX);
 for tt = 1:length(t)
-    leftX(:,:,tt) = mkSine(length(x), pixPerDeg/cycPerDeg, 0, 1, 2*pi*tt/hz).*mkGaussian(length(x), (sigma*pixPerDeg)^2);
-    upX(:,:,tt) = mkSine(length(x), pixPerDeg/cycPerDeg, pi/2, 1, 2*pi*tt/hz);
-    rightX(:,:,tt) = mkSine(length(x), pixPerDeg/cycPerDeg, pi, 1, 2*pi*tt/hz);
-    downX(:,:,tt) = mkSine(length(x), pixPerDeg/cycPerDeg, 3*pi/2, 1, 2*pi*tt/hz);
-    showIm(leftX(:,:,tt));
+    disp tt
+    imagesc(upS(:,:,tt));
     pause
 end
-s = leftX;
+
+s = leftS;
 vertOddSlow = zeros(length(x), length(y), length(t));
 vertEvenSlow = zeros(length(x), length(y), length(t));
 vertOddFast = zeros(length(x), length(y), length(t));
@@ -291,3 +312,13 @@ leftEnergy = leftEven.^2  + leftOdd.^2;
 rightEnergy = rightEven.^2 + rightOdd.^2;
 upEnergy = upEven.^2  + upOdd.^2;
 downEnergy = downEven.^2 + downOdd.^2;
+
+figure;
+subplot(2, 2, 1)
+hold on
+plot(squeeze(sum(sum(leftOdd, 1), 2)));
+plot(squeeze(sum(sum(leftEven, 1), 2)));
+plot(squeeze(sum(sum(leftEnergy, 1), 2)));
+defaultplot;
+xlabel('Left');
+legend('Odd', 'Even', 'Energy');

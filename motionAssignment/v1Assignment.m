@@ -38,3 +38,12 @@ for tt = 1:length(t)
     y1Save(tt) = y1;
 end
 plot(y1Save)
+
+for tt = 1:length(t)
+    leftS(:,:,tt) = mkSine(length(x), pixPerDeg/cycPerDeg, 0, 1, 2*pi*tt/hz).*mkGaussian(length(x), (sigma*pixPerDeg)^2);
+    upS(:,:,tt) = mkSine(length(x), pixPerDeg/cycPerDeg, pi/2, 1, 2*pi*tt/hz);
+    rightS(:,:,tt) = mkSine(length(x), pixPerDeg/cycPerDeg, pi, 1, 2*pi*tt/hz);
+    downS(:,:,tt) = mkSine(length(x), pixPerDeg/cycPerDeg, 3*pi/2, 1, 2*pi*tt/hz);
+    showIm(leftS(:,:,tt));
+    pause
+end
